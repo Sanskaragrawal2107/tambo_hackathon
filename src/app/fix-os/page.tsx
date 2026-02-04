@@ -57,9 +57,9 @@ I can diagnose issues and find step-by-step repair guides for **vehicles** and *
         },
       ]}
     >
-      <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+      <div className="min-h-screen bg-background text-foreground">
         {/* Navigation */}
-        <nav className="sticky top-0 z-40 backdrop-blur-xl bg-zinc-950/90 border-b border-zinc-800/50">
+        <nav className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-3">
@@ -67,8 +67,8 @@ I can diagnose issues and find step-by-step repair guides for **vehicles** and *
                   <Wrench className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white tracking-tight">Fix-OS</h1>
-                  <p className="text-xs text-zinc-400">AI Repair Assistant</p>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">Fix-OS</h1>
+                  <p className="text-xs text-muted-foreground">AI Repair Assistant</p>
                 </div>
               </div>
 
@@ -84,7 +84,7 @@ I can diagnose issues and find step-by-step repair guides for **vehicles** and *
         </nav>
 
         {/* Main Chat Area */}
-        <main className="h-[calc(100vh-64px)]">
+        <main className="h-[calc(100vh-64px)] bg-background">
           <MessageThreadFull />
         </main>
       </div>
@@ -94,7 +94,7 @@ I can diagnose issues and find step-by-step repair guides for **vehicles** and *
 
 function QuickActionButton({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-all duration-200 border border-transparent hover:border-zinc-700/50">
+    <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200 border border-transparent hover:border-border">
       <Icon className="w-4 h-4" />
       <span className="hidden lg:inline">{label}</span>
     </button>

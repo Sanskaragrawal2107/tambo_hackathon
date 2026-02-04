@@ -204,7 +204,7 @@ const ThreadHistoryHeader = React.forwardRef<
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className={cn(
-          `bg-container p-1 hover:bg-backdrop transition-colors rounded-md cursor-pointer absolute flex items-center justify-center`,
+          `bg-container p-1 hover:bg-muted text-foreground transition-colors rounded-md cursor-pointer absolute flex items-center justify-center`,
           position === "left" ? "right-1" : "left-0",
         )}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -314,14 +314,14 @@ const ThreadHistorySearch = React.forwardRef<
       <button
         onClick={expandOnSearch}
         className={cn(
-          "p-1 hover:bg-backdrop rounded-md cursor-pointer absolute left-1/2 -translate-x-1/2",
+          "p-1 hover:bg-muted rounded-md cursor-pointer absolute left-1/2 -translate-x-1/2 text-foreground transition-colors",
           isCollapsed
             ? "opacity-100 pointer-events-auto transition-all duration-300"
             : "opacity-0 pointer-events-none",
         )}
         title="Search threads"
       >
-        <SearchIcon className="h-4 w-4 text-gray-400" />
+        <SearchIcon className="h-4 w-4" />
       </button>
 
       {/*visible when expanded with delay */}
@@ -335,15 +335,19 @@ const ThreadHistorySearch = React.forwardRef<
         )}
       >
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <SearchIcon className="h-4 w-4 text-gray-400" />
+          <SearchIcon className="h-4 w-4 text-foreground" />
         </div>
         <input
           ref={searchInputRef}
           type="text"
-          className="pl-10 pr-4 py-2 w-full text-sm rounded-md bg-container focus:outline-none"
+          className="pl-10 pr-4 py-2 w-full text-sm text-foreground bg-container border border-primary/20 rounded-md focus:outline-none focus:border-primary focus:bg-white transition-colors"
           placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            color: 'var(--foreground)',
+            caretColor: 'var(--foreground)',
+          }}
         />
       </div>
     </div>
@@ -512,12 +516,12 @@ const ThreadHistoryList = React.forwardRef<
             key={thread.id}
             onClick={async () => await handleSwitchThread(thread.id)}
             className={cn(
-              "p-2 rounded-md hover:bg-backdrop cursor-pointer group flex items-center justify-between",
+              "p-2 rounded-md hover:bg-muted cursor-pointer group flex items-center justify-between transition-colors",
               currentThread?.id === thread.id ? "bg-muted" : "",
               editingThread?.id === thread.id ? "bg-muted" : "",
             )}
           >
-            <div className="text-sm flex-1">
+            <div className="text-sm flex-1 text-foreground">
               {editingThread?.id === thread.id ? (
                 <form
                   onSubmit={handleNameSubmit}
@@ -529,7 +533,7 @@ const ThreadHistoryList = React.forwardRef<
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-background px-1 text-sm font-medium focus:outline-none rounded-sm"
+                    className="w-full bg-background px-1 text-sm font-medium focus:outline-none rounded-sm border border-primary text-foreground"
                     onClick={(e) => e.stopPropagation()}
                     placeholder="Thread name..."
                   />
@@ -544,7 +548,7 @@ const ThreadHistoryList = React.forwardRef<
                 </form>
               ) : (
                 <>
-                  <span className="font-medium line-clamp-1">
+                  <span className="font-medium line-clamp-1 text-foreground">
                     {thread.name ?? `Thread ${thread.id.substring(0, 8)}`}
                   </span>
                   <p className="text-xs text-muted-foreground truncate mt-1">
