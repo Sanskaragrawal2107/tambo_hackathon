@@ -229,7 +229,7 @@ export const BookProfessionalService = React.forwardRef<
         <div className="space-y-3">
           <h3 className="font-semibold text-gray-900">Cost Breakdown</h3>
           <div className="bg-gray-50 rounded-lg p-4 space-y-2 border border-gray-100">
-            {breakdownDetails.length > 0 ? (
+            {breakdownDetails && breakdownDetails.length > 0 ? (
               breakdownDetails.map((item, idx) => (
                 <div key={idx} className="flex justify-between text-sm">
                   <span className="text-gray-600">{item.label}</span>
@@ -242,7 +242,7 @@ export const BookProfessionalService = React.forwardRef<
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Service Cost</span>
                 <span className="font-medium text-gray-900">
-                  ${(totalCost - taxAmount).toFixed(2)}
+                  ${(totalCost - (taxAmount || 0)).toFixed(2)}
                 </span>
               </div>
             )}

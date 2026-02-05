@@ -8,14 +8,15 @@ export const serviceRequestCardSchema = z.object({
   serviceNumber: z.string().describe("Unique service request number"),
   issueType: z.string().describe("Type of service/issue"),
   vehicleInfo: z.string().describe("Vehicle details from chat context"),
-  availableSlots: z.array(
+  availableTimeSlots: z.array(
     z.object({
       date: z.string(),
+      dayOfWeek: z.string().optional(),
       time: z.string(),
       label: z.string(),
     })
   ).describe("Available appointment time slots"),
-  estimatedCost: z.object({
+  estimatedCostRange: z.object({
     low: z.number().optional(),
     high: z.number().optional(),
   }).optional().describe("Estimated service cost range"),
@@ -38,8 +39,8 @@ export const ServiceRequestCard = React.forwardRef<
       serviceNumber,
       issueType,
       vehicleInfo,
-      availableSlots,
-      estimatedCost,
+      availableTimeSlots = [],
+      estimatedCostRange,
       description,
       className,
       ...props
@@ -90,7 +91,7 @@ export const ServiceRequestCard = React.forwardRef<
               </div>
             </div>
 
-            {estimatedCost && (estimatedCost.low || estimatedCost.high) && (
+            {estimatedCostRange && (estimatedCostRange.low || estimatedCostRange.high) && (
               <div className="flex items-start gap-3">
                 <FileText className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -98,7 +99,7 @@ export const ServiceRequestCard = React.forwardRef<
                     Estimated Cost
                   </p>
                   <p className="text-base font-semibold text-gray-900">
-                    ${estimatedCost.low || 0} - ${estimatedCost.high || 0}
+                    ${estimatedCostRange.low || 0} - ${estimatedCostRange.high || 0}
                   </p>
                 </div>
               </div>
@@ -120,7 +121,8 @@ export const ServiceRequestCard = React.forwardRef<
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {availableSlots.map((slot, index) => (
+            {availableTimeSlots && availableTimeSlots.length > 0 ? (
+              availableTimeSlots.map((slot, index) => (
               <button
                 key={`${slot.date}-${slot.time}-${index}`}
                 onClick={() => setSelectedSlot(`${slot.date}-${slot.time}`)}
@@ -139,7 +141,12 @@ export const ServiceRequestCard = React.forwardRef<
                 <p className="text-sm text-gray-600">{slot.time}</p>
                 <p className="text-xs text-gray-500 mt-1">{slot.label}</p>
               </button>
-            ))}
+            ))
+            ) : (
+              <div className="col-span-full p-4 text-center text-gray-500">
+                No time slots available
+              </div>
+            )}
           </div>
 
           {selectedSlot && (
