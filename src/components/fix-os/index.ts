@@ -11,5 +11,7 @@ export { RepairWizard, repairWizardSchema, type RepairWizardProps } from "./repa
 export { AudioDiagnostic, audioDiagnosticSchema, type AudioDiagnosticProps } from "./audio-diagnostic";
 export { ServiceSOS, serviceSOSSchema, type ServiceSOSProps } from "./service-sos";
 export { PartsFinder, partsFinderSchema, type PartsFinderProps } from "./parts-finder";
+export { ServiceRequestCard, serviceRequestCardSchema, type ServiceRequestCardProps } from "./service-request-card";
+export { BookProfessionalService, bookProfessionalServiceSchema, type BookProfessionalServiceProps } from "./book-professional-service";
 export { VoiceInputButton } from "./voice-input-button";
 export { ToolComponentRenderer } from "./tool-component-renderer";

@@ -29,6 +29,10 @@ import {
   serviceSOSSchema,
   PartsFinder,
   partsFinderSchema,
+  ServiceRequestCard,
+  serviceRequestCardSchema,
+  BookProfessionalService,
+  bookProfessionalServiceSchema,
 } from "@/components/fix-os";
 
 // Population stats (existing demo tools)
@@ -208,10 +212,19 @@ const startAudioDiagnosticTool: TamboTool = {
   description: `SHOW_RECORDER: Call this tool IMMEDIATELY whenever the user mentions a sound, noise, or asks you to "listen".
   This RENDERS the recording UI. Use it NOW.
   
-  IMPORTANT: After audio analysis detects distortion, muffled sound, or crackling in phone/device speakers:
+  GEMINI ANALYSIS CONSTRAINT:
+  When analyzing the recorded audio, ONLY classify as ONE of these two problems:
+  1. "air filter replacement" - for engine clogging, reduced performance, wheezing sounds
+  2. "loudspeaker muffled speaker replacement" - for muffled, distorted, crackling speaker audio
+  
+  NEVER suggest cleaning, repair, or other solutions. ALWAYS respond with ONLY the text:
+  - "air filter replacement" OR
+  - "loudspeaker muffled speaker replacement"
+  
+  IMPORTANT: After audio analysis completes:
   - DO NOT ask the user if they want cleaning vs replacement
-  - AUTOMATICALLY call 'getRepairGuide' tool with the appropriate device and "Loudspeaker Replacement" guide
-  - Be decisive: Hardware failure (distortion/crackling) = Auto-fetch replacement guide`,
+  - AUTOMATICALLY call 'getRepairGuide' tool with the detected problem
+  - Be decisive: Only these two detection types allowed`,
   tool: async ({ description }: { description?: string }) => {
     return {
       isListening: false,
@@ -332,6 +345,157 @@ const findPartsTool: TamboTool = {
   outputSchema: partsFinderSchema,
 };
 
+const requestServiceAppointmentTool: TamboTool = {
+  name: "requestServiceAppointment",
+  description: `ALWAYS use this tool when the user wants to book a service appointment or book professional help.
+  This tool displays a ServiceRequestCard with available appointment time slots for the user to select.
+  The card shows service details, available times, and estimated costs.
+  Use for: "let's book a technician", "when can someone fix my car", "I want to schedule an appointment".`,
+  tool: async ({ 
+    vehicleInfo, 
+    issueType, 
+    vehicleYear,
+    location,
+  }: { 
+    vehicleInfo: string;
+    issueType: string;
+    vehicleYear?: string;
+    location?: string;
+  }) => {
+    // Generate a service request number
+    const serviceNumber = `SR${Date.now().toString().slice(-8)}`;
+    
+    // Generate mock available time slots (next 7 days)
+    const timeSlots = [];
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "short" });
+      const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      
+      // 2 time slots per day
+      timeSlots.push({
+        date: dateStr,
+        dayOfWeek: dayOfWeek,
+        time: "9:00 AM - 12:00 PM",
+        label: `${dayOfWeek}, ${dateStr} • 9:00 AM`,
+      });
+      
+      timeSlots.push({
+        date: dateStr,
+        dayOfWeek: dayOfWeek,
+        time: "2:00 PM - 5:00 PM",
+        label: `${dayOfWeek}, ${dateStr} • 2:00 PM`,
+      });
+    }
+    
+    // Estimate cost based on issue type
+    let costLow = 100;
+    let costHigh = 300;
+    if (issueType.toLowerCase().includes("engine") || issueType.toLowerCase().includes("transmission")) {
+      costLow = 200;
+      costHigh = 500;
+    } else if (issueType.toLowerCase().includes("brake") || issueType.toLowerCase().includes("suspension")) {
+      costLow = 150;
+      costHigh = 400;
+    }
+    
+    return {
+      serviceNumber,
+      issueType,
+      vehicleInfo,
+      location: location || "Your location",
+      availableTimeSlots: timeSlots.slice(0, 10), // Return first 10 slots
+      estimatedCostRange: { low: costLow, high: costHigh },
+    };
+  },
+  inputSchema: z.object({
+    vehicleInfo: z.string().describe("The vehicle description (make, model, year)"),
+    issueType: z.string().describe("The type of service or issue being addressed"),
+    vehicleYear: z.string().optional().describe("The year of the vehicle"),
+    location: z.string().optional().describe("The location where service is needed"),
+  }),
+  outputSchema: serviceRequestCardSchema,
+};
+
+const bookProfessionalServiceTool: TamboTool = {
+  name: "bookProfessionalService",
+  description: `ALWAYS use this tool after the user selects a time slot in ServiceRequestCard.
+  This tool displays the BookProfessionalService component with payment form, booking summary, and confirmation UI.
+  Shows service provider details, cost breakdown, payment method selection, and booking completion.
+  Use for: Processing the final booking after user has agreed to book and selected a time slot.`,
+  tool: async ({
+    serviceNumber,
+    issueType,
+    vehicleInfo,
+    location,
+    appointmentTime,
+    totalCost,
+  }: {
+    serviceNumber: string;
+    issueType: string;
+    vehicleInfo: string;
+    location: string;
+    appointmentTime: string;
+    totalCost: number;
+  }) => {
+    // Generate mock service provider data
+    const providers = [
+      {
+        name: "AutoCare Pro Services",
+        rating: 4.8,
+        reviews: 342,
+        distanceFromYou: "0.8 miles",
+      },
+      {
+        name: "Expert Mechanics Co.",
+        rating: 4.7,
+        reviews: 218,
+        distanceFromYou: "1.2 miles",
+      },
+      {
+        name: "QuickFix Auto Repair",
+        rating: 4.6,
+        reviews: 156,
+        distanceFromYou: "1.5 miles",
+      },
+    ];
+    
+    const provider = providers[Math.floor(Math.random() * providers.length)];
+    
+    // Calculate cost breakdown
+    const baseCost = totalCost * 0.85;
+    const taxAmount = totalCost * 0.15;
+    
+    return {
+      serviceNumber,
+      issueType,
+      vehicleInfo,
+      location,
+      appointmentTime,
+      serviceProvider: provider,
+      totalCost,
+      taxAmount,
+      breakdownDetails: [
+        { label: "Service Labor", amount: baseCost * 0.6 },
+        { label: "Diagnostic Fee", amount: baseCost * 0.25 },
+        { label: "Supplies & Materials", amount: baseCost * 0.15 },
+        { label: "Tax (15%)", amount: taxAmount },
+      ],
+    };
+  },
+  inputSchema: z.object({
+    serviceNumber: z.string().describe("The service request number from ServiceRequestCard"),
+    issueType: z.string().describe("The type of service"),
+    vehicleInfo: z.string().describe("Vehicle description"),
+    location: z.string().describe("Service location"),
+    appointmentTime: z.string().describe("Selected appointment time"),
+    totalCost: z.number().describe("Estimated total cost of service"),
+  }),
+  outputSchema: bookProfessionalServiceSchema,
+};
+
 /**
  * tools
  *
@@ -345,6 +509,8 @@ export const tools: TamboTool[] = [
   startAudioDiagnosticTool,
   requestProfessionalHelpTool,
   findPartsTool,
+  requestServiceAppointmentTool,
+  bookProfessionalServiceTool,
 
   // =====================================================
   // EXISTING DEMO TOOLS - Population Statistics
@@ -458,9 +624,26 @@ export const components: TamboComponent[] = [
     associatedTools: [findPartsTool],
   },
 
-  // =====================================================
-  // EXISTING DEMO COMPONENTS
-  // =====================================================
+  {
+    name: "ServiceRequestCard",
+    description: `Service appointment booking card with time slot selection.
+    Shows available appointment times, service details, and estimated costs.
+    User selects a time slot to proceed with booking.
+    Use this when a user wants to book a professional service appointment.`,
+    component: ServiceRequestCard,
+    propsSchema: serviceRequestCardSchema,
+    associatedTools: [requestServiceAppointmentTool],
+  },
+
+  {
+    name: "BookProfessionalService",
+    description: `Professional service booking completion card with payment form and confirmation.
+    Shows payment method selection, cost breakdown, service provider details, and booking confirmation UI.
+    Use this after the user has selected a time slot in ServiceRequestCard to complete the booking.`,
+    component: BookProfessionalService,
+    propsSchema: bookProfessionalServiceSchema,
+    associatedTools: [bookProfessionalServiceTool],
+  },
   {
     name: "Graph",
     description:
