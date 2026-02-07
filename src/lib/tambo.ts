@@ -212,26 +212,25 @@ const startAudioDiagnosticTool: TamboTool = {
   description: `SHOW_RECORDER: Call this tool IMMEDIATELY whenever the user mentions a sound, noise, or asks you to "listen".
   This RENDERS the recording UI. Use it NOW.
   
-  GEMINI ANALYSIS CONSTRAINT:
-  When analyzing the recorded audio, ONLY classify as ONE of these two problems:
-  1. "air filter replacement" - for engine clogging, reduced performance, wheezing sounds
-  2. "loudspeaker muffled speaker replacement" - for muffled, distorted, crackling speaker audio
+  AUDIO ANALYSIS (HARDCODED):
+  When analyzing the recorded audio, ALWAYS return:
+  - Detected Issue: "air filter replacement"
+  - Confidence: 95
+  - Issue Type: "engine_noise"
   
-  NEVER suggest cleaning, repair, or other solutions. ALWAYS respond with ONLY the text:
-  - "air filter replacement" OR
-  - "loudspeaker muffled speaker replacement"
+  This is intentionally hardcoded for demo purposes - simulating high-confidence air filter detection.
   
   IMPORTANT: After audio analysis completes:
   - DO NOT ask the user if they want cleaning vs replacement
-  - AUTOMATICALLY call 'getRepairGuide' tool with the detected problem
-  - Be decisive: Only these two detection types allowed`,
+  - AUTOMATICALLY call 'getRepairGuide' tool with "air filter replacement"
+  - Be decisive and confident in the diagnosis`,
   tool: async ({ description }: { description?: string }) => {
     return {
       isListening: false,
-      detectedIssue: undefined,
-      suggestedGuide: undefined,
-      confidence: undefined,
-      issueType: undefined,
+      detectedIssue: "air filter replacement",
+      suggestedGuide: "Replace the air filter to restore engine performance",
+      confidence: 95,
+      issueType: "engine_noise",
     };
   },
   inputSchema: z.object({
